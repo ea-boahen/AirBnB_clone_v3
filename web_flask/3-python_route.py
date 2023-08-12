@@ -1,35 +1,46 @@
 #!/usr/bin/python3
-"""Simple Flask web application"""
+"""
+script starts Flask web app
+    listen on 0.0.0.0, port 5000
+    routes: /:              display "Hello HBNB!"
+            /hbnb:          display "HBNB"
+            /c/<text>:      display "C" + text (replace underscores with space)
+            /python/<text>: display "Python" + text (default is "is cool")
+"""
+
 from flask import Flask
-app = Flask('web_flask')
+app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 
 @app.route('/')
-def hello_route1():
-    """Return 'Hello HBNB!'"""
-    return 'Hello HBNB!'
+def hello_hbnb():
+    """display text"""
+    return "Hello HBNB!"
 
 
 @app.route('/hbnb')
-def hello_route2():
-    """Return 'HBNB'"""
-    return 'HBNB'
+def hbnb():
+    """display text"""
+    return "HBNB"
 
 
 @app.route('/c/<text>')
-def hello_route3(text):
-    """Return 'C ' followed by text from html request"""
-    return 'C {}'.format(text.replace('_', ' '))
+def c_text(text):
+    """display custom text given"""
+    return "C {}".format(text.replace('_', ' '))
 
 
+@app.route('/python')
 @app.route('/python/<text>')
-@app.route('/python/', defaults={'text': 'is cool'})
-def hello_route4(text):
-    """Return 'Python ' followed by text from html request with
-    default text 'is cool'"""
-    return 'Python {}'.format(text.replace('_', ' '))
+def python_text(text="is cool"):
+    """display custom text given
+       first route statement ensures it works for:
+          curl -Ls 0.0.0.0:5000/python ; echo "" | cat -e
+          curl -Ls 0.0.0.0:5000/python/ ; echo "" | cat -e
+    """
+    return "Python {}".format(text.replace('_', ' '))
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host="0.0.0.0", port=5000)

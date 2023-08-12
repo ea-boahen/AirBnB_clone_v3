@@ -1,48 +1,62 @@
 #!/usr/bin/python3
-"""Simple Flask web application"""
+"""
+script starts Flask web app
+    listen on 0.0.0.0, port 5000
+    routes: /:                    display "Hello HBNB!"
+            /hbnb:                display "HBNB"
+            /c/<text>:            display "C" + text (replace "_" with " ")
+            /python/<text>:       display "Python" + text (default="is cool")
+            /number/<n>:          display "n is a number" only if int
+            /number_template/<n>: display HTML page only if n is int
+"""
+
 from flask import Flask, render_template
-app = Flask('web_flask')
+app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 
 @app.route('/')
-def hello_route1():
-    """Return 'Hello HBNB!'"""
-    return 'Hello HBNB!'
+def hello_hbnb():
+    """display text"""
+    return "Hello HBNB!"
 
 
 @app.route('/hbnb')
-def hello_route2():
-    """Return 'HBNB'"""
-    return 'HBNB'
+def hbnb():
+    """display text"""
+    return "HBNB"
 
 
 @app.route('/c/<text>')
-def hello_route3(text):
-    """Return 'C ' followed by text from html request"""
-    return 'C {}'.format(text.replace('_', ' '))
+def c_text(text):
+    """display custom text given"""
+    return "C {}".format(text.replace('_', ' '))
 
 
+@app.route('/python')
 @app.route('/python/<text>')
-@app.route('/python/', defaults={'text': 'is cool'})
-def hello_route4(text):
-    """Return 'Python ' followed by text from html request with
-    default text 'is cool'"""
-    return 'Python {}'.format(text.replace('_', ' '))
+def python_text(text="is cool"):
+    """display custom text given
+       first route statement ensures it works for:
+          curl -Ls 0.0.0.0:5000/python ; echo "" | cat -e
+          curl -Ls 0.0.0.0:5000/python/ ; echo "" | cat -e
+    """
+    return "Python {}".format(text.replace('_', ' '))
 
 
 @app.route('/number/<int:n>')
-def hello_route5(n):
-    """Return last part of html request formatted as a number if
-    it can be converted to an int"""
-    return '{:d} is a number'.format(n)
+def text_if_int(n):
+    """display text only if int given"""
+    return "{:d} is a number".format(n)
 
 
 @app.route('/number_template/<int:n>')
-def hello_route6(n):
-    """Return html template containing the number `n`"""
+def html_if_int(n):
+    """display html page only if int given
+       place given int into html template
+    """
     return render_template('5-number.html', n=n)
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host="0.0.0.0", port=5000)

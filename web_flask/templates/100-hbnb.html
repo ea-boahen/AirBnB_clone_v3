@@ -1,89 +1,101 @@
 <!DOCTYPE html>
-<html lang="zxx">
-  <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="../static/styles/4-common.css">
-    <link rel="stylesheet" href="../static/styles/3-header.css">
-    <link rel="stylesheet" href="../static/styles/3-footer.css">
-    <link rel="stylesheet" href="../static/styles/6-filters.css">
-    <link rel="stylesheet" href="../static/styles/8-places.css">
-    <link rel="icon" href="../static/images/icon.png" type="image/png">
-    <title>AirBnb Clone</title>
-  </head>
-  <body>
+<html lang="en">
+
+<head>
+    <title>Holberton School</title>
+    <link href="static/styles/3-header.css" rel="stylesheet">
+    <link href="static/styles/4-common.css" rel="stylesheet">
+    <link href="static/styles/3-footer.css" rel="stylesheet">
+    <link href="static/styles/6-filters.css" rel="stylesheet">
+    <link href="static/styles/8-places.css" rel="stylesheet">
+    <link href="https://s3.amazonaws.com/intranet-projects-files/holbertonschool-higher-level_programming+/268/icon.png" rel="icon">
+</head>
+
+<body>
     <header>
-      <div class="logo">
-      </div>
+        <div class="logo"></div>
     </header>
     <div class="container">
-      <section class="filters">
-	<div class="locations">
-          <h3>States</h3>
-	  <h4>&nbsp;</h4>
-          <ul class="popover">
-	    {% for state in states.values()|sort(attribute='name') %}
-            <li>
-              <h2>{{ state.name }}</h2>
-              <ul>
-	      {% for city in state.cities|sort(attribute='name') %}
-                <li>{{ city.name }}</li>
-	      {% endfor %}
+        <section class="filters">
+            <button type="button">Search</button>
+            <div class="locations">
+                <h3>States</h3>
+                <h4>&nbsp;</h4>
+                <ul class="popover">
+		  {% for state in state_objs | sort(attribute='name') %}
+                  <li><h2>{{ state.name }}:</h2></li>
+                  <li>
+                    <ul class="popover_list">
+		      {% for city in state.cities | sort(attribute='name') %}
+                      <li>{{ city.name }}</li>
+		      {% endfor %}
+                    </ul>
+                  </li>
+		  {% endfor %}
+                </ul>
+            </div>
+            <div class="amenities">
+              <h3>Amenities</h3>
+              <h4>&nbsp;</h4>
+              <ul class="popover">
+                {% for amenity in amenity_objs | sort(attribute='name') %}
+		<li>{{ amenity.name }}</li>
+		{% endfor %}
               </ul>
-            </li>
-	    {% endfor %}
-	  </ul>
-	</div>
-	<div class="amenities">
-          <h3>Amenities</h3>
-          <h4>&nbsp;</h4>
-          <ul class="popover">
-	    {% for amty in amenities.values() %}
-	    <li>{{ amty.name }}</li>
-	    {% endfor %}
-          </ul>
-	</div>
-	<button>
-	  Search
-	</button>
-      </section>
-      <section class="places">
-	<h1>Places</h1>
-	{% for place in places.values()|sort(attribute='name') %}
-	<article>
-	  <h2>{{ place.name }}</h2>
-	  <div class="price_by_night">
-	    <p>${{ place.price_by_night }}</p>
-	  </div>
-	  <div class="information">
-	    <div class="max_guest">
-	      <div class="guest_image"></div>
-	      <p>{{ place.max_guest }}</p>
-	    </div>
-	    <div class="number_rooms">
-	      <div class="bed_image"></div>
-	      <p>{{ place.number_rooms }}</p>
-	    </div>
-	    <div class="number_bathrooms">
-	      <div class="bath_image"></div>
-	      <p>{{ place.number_bathrooms }}</p>
-	    </div>
-	  </div>
-	  <div class="user">
-	    <p><b>Owner: </b>{{ place.user.first_name ~ ' ' ~ place.user.last_name }}</p>
-	  </div>
-	  <div class="description">
-	    {% autoescape false %}
-	    <p>{{ place.description }}</p>
-	    {% endautoescape %}
-	  </div>
-	</article>
-	{% endfor %}
-      </section>
+            </div>
+        </section>
+        <section class="places">
+            <div class="places_title">
+                <h1>Places</h1>
+            </div>
+            <div class="articles">
+	      {% for place in place_owner_objs %}
+                <article>
+                    <div class="price_title">
+                        <div class="article_title">
+                            <h2>{{ place[1].name }}</h2>
+                        </div>
+                        <div class="price_by_night">
+                            <div class="price">
+                                ${{ place[1].price_by_night }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="information">
+                        <div class="max_guest">
+                            <div class="guest_icon">
+                            </div>
+                            <div class="guest_number">
+                                <h2>{{ place[1].max_guest }} Guests</h2>
+                            </div>
+                        </div>
+                        <div class="number_rooms">
+                            <div class="rooms_icon">
+                            </div>
+                            <div class="rooms_number">
+                                <h2>{{ place[1].number_rooms }} Bedroom</h2>
+                            </div>
+                        </div>
+                        <div class="number_bathrooms">
+                            <div class="bathrooms_icon">
+                            </div>
+                            <div class="bathrooms_number">
+			      <h2>{{ place[1].number_bathrooms }} Bathroom</h2>
+			    </div>
+                        </div>
+                    </div>
+                    <div class="user"><b>Owner: </b>{{ place[0] }}</div>
+		    {% autoescape false %}
+                    <div class="description">{{ place[1].description }}</div>
+		    {% endautoescape %}
+                </article>
+		{% endfor %}
+            </div>
+        </section>
     </div>
     <footer>
-      <p>
-	Holberton School
-      </p>
+        Holberton School
     </footer>
-  </body>
+</body>
+
 </html>

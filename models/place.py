@@ -1,86 +1,87 @@
 #!/usr/bin/python3
-""" holds class Place"""
-import models
-from models import BaseModel, Base
+'''
+    Define the class Place.
+'''
 from os import getenv
-from sqlalchemy import Column, String, Integer, Float, Table, ForeignKey
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, Table
 from sqlalchemy.orm import relationship
+from models.base_model import BaseModel, Base
+# from models.amenity import Amenity
+
 
 place_amenity = Table('place_amenity', Base.metadata,
-                      Column('place_id',
-                             String(60),
-                             ForeignKey('places.id'),
-                             primary_key=True,
-                             nullable=False),
-                      Column('amenity_id',
-                             String(60),
-                             ForeignKey('amenities.id'),
-                             primary_key=True,
-                             nullable=False))
+                      Column('place_id', String(60), ForeignKey("places.id"),
+                             primary_key=True, nullable=False),
+                      Column('amenity_id', String(60),
+                             ForeignKey("amenities.id"),
+                             primary_key=True, nullable=False))
 
 
 class Place(BaseModel, Base):
-    """Representation of Place """
-    __tablename__ = 'places'
-    city_id = Column(String(60),
-                     ForeignKey("cities.id"),
-                     nullable=False)
-    user_id = Column(String(60),
-                     ForeignKey('users.id'),
-                     nullable=False)
-    name = Column(String(128),
-                  nullable=False)
-    description = Column(String(1024),
-                         nullable=True)
-    number_rooms = Column(Integer,
-                          default=0,
-                          nullable=False)
-    number_bathrooms = Column(Integer,
-                              default=0,
-                              nullable=False)
-    max_guest = Column(Integer,
-                       default=0,
-                       nullable=False)
-    price_by_night = Column(Integer,
-                            default=0,
-                            nullable=False)
-    latitude = Column(Float, default=0.0)
-    longitude = Column(Float, default=0.0)
-
-    if getenv("HBNB_TYPE_STORAGE") in ["db", "sl"]:
-        reviews = relationship("Review", cascade="all, delete-orphan",
-                               backref="places")
-        amenities = relationship("Amenity",
-                                 secondary='place_amenity',
+    '''
+        Define the class Place that inherits from BaseModel.
+    '''
+    __tablename__ = "places"
+    if getenv("HBNB_TYPE_STORAGE", "fs") == "db":
+        city_id = Column(String(60), ForeignKey("cities.id"), nullable=False)
+        user_id = Column(String(60), ForeignKey("users.id"), nullable=False)
+        name = Column(String(128), nullable=False)
+        description = Column(String(1024), nullable=True)
+        number_rooms = Column(Integer, default=0, nullable=False)
+        number_bathrooms = Column(Integer, default=0, nullable=False)
+        max_guest = Column(Integer, default=0, nullable=False)
+        price_by_night = Column(Integer, default=0, nullable=False)
+        latitude = Column(Float, nullable=True)
+        longitude = Column(Float, nullable=True)
+        reviews = relationship("Review", backref="place",
+                               cascade="all, delete, delete-orphan")
+        amenities = relationship("Amenity", secondary=place_amenity,
                                  viewonly=False,
-                                 backref="place_amenities")
+                                 back_populates="place_amenities")
     else:
+        city_id = ""
+        user_id = ""
+        name = ""
+        description = ""
+        number_rooms = 0
+        number_bathrooms = 0
+        max_guest = 0
+        price_by_night = 0
+        latitude = 0.0
+        longitude = 0.0
+        amenity_ids = []
+
         @property
         def reviews(self):
-            """attribute that returns list of Review instances"""
-            review_values = models.storage.all("Review").values()
-            return list(filter(lambda r: r.place_id == self.id,
-                               review_values))
+            '''
+                Return list: review instances if Review.place_id==curr place.id
+                FileStorage relationship between Place and Review
+            '''
+            list_reviews = []
+            for review in models.storage.all(Review).values():
+                if review.place_id == self.id:
+                    list_reviews.append(review)
+            return list_reviews
 
         @property
         def amenities(self):
-            """attribute that returns list of Amenity instances"""
-            amenity_values = models.storage.all("Amenity").values()
-            return list(filter(lambda a: a.id in self.amenity_ids,
-                               amenity_values))
+            '''
+                Return list: amenity inst's if Amenity.place_id=curr place.id
+                FileStorage many to many relationship between Place and Amenity
+            '''
+            list_amenities = []
+            for amenity in models.storage.all(Amenity).values():
+                if amenity.place_id == self.id:
+                    amenity_list.append(amenity)
+            return list_amenities
 
-    def __init__(self, *args, **kwargs):
-        """initializes Place"""
-        self.city_id = kwargs.pop("city_id", "")
-        self.user_id = kwargs.pop("user_id", "")
-        self.name = kwargs.pop("name", "")
-        self.description = kwargs.pop("description", "")
-        self.number_rooms = kwargs.pop("number_rooms", 0)
-        self.number_bathrooms = kwargs.pop("number_bathrooms", 0)
-        self.max_guest = kwargs.pop("max_guest", 0)
-        self.price_by_night = kwargs.pop("price_by_night", 0)
-        self.latitude = kwargs.pop("latitude", 0.0)
-        self.longitude = kwargs.pop("longitude", 0.0)
-        self.amenity_ids = list(map(lambda a: a if type(a) == str else a.id,
-                                    kwargs.pop("amenities", [])))
-        super().__init__(*args, **kwargs)
+        @amenities.setter
+        def amenities(self, amenity=None):
+            '''
+                Set list: amenity instances if Amenity.place_id==curr place.id
+                Set by adding instance objs to amenity_ids attribute in Place
+            '''
+            if amenity:
+                for amenity in models.storage.all(Amenity).values():
+                    if amenity.place_id == self.id:
+                        amenity_ids.append(amenity)
